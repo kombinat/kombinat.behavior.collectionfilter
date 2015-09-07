@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2015-09-07 06:29+0000\n"
+"PO-Revision-Date: 2015-09-07 09:02+0200\n"
+"Last-Translator: Peter Mathis <peter.mathis@kombinat.at>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Language-Code: en\n"
+"Language-Name: English\n"
+"Preferred-Encodings: utf-8 latin1\n"
+"Domain: DOMAIN\n"
+"Language: de\n"
+"X-Generator: Poedit 1.8.4\n"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:18
+msgid "-- all Locations --"
+msgstr "-- Alle Pfade --"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:17
+msgid "-- all Subjects --"
+msgstr "-- Alle Stichwörter --"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:19
+msgid "-- all Types --"
+msgstr "-- Alle Artikeltypen --"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:29
+msgid "Allow empty values for"
+msgstr "Erlaube leere Werte für folgende Felder"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:21
+msgid "Default Filter Values"
+msgstr "Standard Filterwerte"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:22
+msgid "Set default values with key:value in each line"
+msgstr "Standardwerte setzen mit \"Feldname:Wert\""
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:38
+msgid "Show 'Startdate' selector"
+msgstr "Zeige \"Startdatum\"-Feld"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:14
+msgid "Show Filter"
+msgstr "Zeige Filter"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:15
+msgid "Show criteria filter in view and/or tile view of collective.cover"
+msgstr "Aktiviert Filter für Kollektionsansicht oder Tiles"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/collection_filter.pt:25
+msgid "When"
+msgstr "Wann"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/collection_filter.pt:30
+msgid "You did not specify any filterable criterias for this collection.<br /> Right now we can filter the criterias <i>Format</i>, <i>Info Type</i> and <i>Theme</i>."
+msgstr "Sie haben keine filterbaren Kriterien in dieser Kollektion angegeben."
+
+#. Default: "Fieldnames provided here can be empty"
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:30
+msgid "help_allow_empty_values"
+msgstr ""
+"Hier angegebene Felder können auch \"leer\" sein, d.h. Sie werden im Query nicht berücksichtig. Andernfalls muss zwingend eines der angegebenen Werte im Suchquery vorkommen.<br />\n"
+"z.B: portal_type:Document"

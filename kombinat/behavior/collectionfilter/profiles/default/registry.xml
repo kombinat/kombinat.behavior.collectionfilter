@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<registry xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+
+    <!-- criteria mapping dict ... override this in your theme package -->
+    <record name="kombinat.behavior.collectionfilter.translation_map">
+        <field type="plone.registry.field.TextLine">
+            <title>Filter Key Translation map</title>
+            <description>define your filterable criterias with this mapping</description>
+        </field>
+        <value>kombinat.behavior.collectionfilter.browser.viewlet.FILTER_TRANSLATION_MAP</value>
+    </record>
+
+    <!-- criteria vocabulary dict -->
+    <record name="kombinat.behavior.collectionfilter.vocabulary_map">
+        <field type="plone.registry.field.TextLine">
+            <title>Vocabulary map</title>
+            <description>define vocabularies for filter criterias</description>
+        </field>
+        <value>kombinat.behavior.collectionfilter.browser.viewlet.FILTER_VOCABULARY_MAP</value>
+    </record>
+
+</registry>

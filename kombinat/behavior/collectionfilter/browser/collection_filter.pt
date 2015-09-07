@@ -1,0 +1,37 @@
+<div i18n:domain="kombinat.behavior.collectionfilter"
+     tal:condition="view/available">
+    <form tal:attributes="action context/absolute_url"
+          tal:define="ffields view/filter_fields;
+                      show_start context/show_start|nothing;
+                      len_ffields python:show_start and len(ffields) + 1 or len(ffields);
+                      col_width python:len_ffields > 0 and 12 / len_ffields or 12"
+          class="collection-filter row">
+    <div tal:repeat="fld ffields"
+         tal:attributes="class string:col-sm-${col_width}">
+      <select class="pat-select2" size="1" name="Type"
+              data-pat-select2="allowClear: true"
+              tal:attributes="name fld/name;
+                              data-placeholder fld/placeholder">
+        <option value=""></option>
+        <tal:block repeat="i fld/options">
+        <option tal:attributes="value i/value;
+                                selected i/selected"
+                tal:content="i/title">item</option>
+        </tal:block>
+      </select>
+    </div>
+    <div tal:condition="show_start"
+         tal:attributes="class string:col-sm-${col_width}">
+      <input type="text" name="start" class="pat-pickadate"
+             data-pat-pickadate='time:false;placeholderDate:Wann' placeholder="When"
+        i18n:attributes="placeholder"
+        tal:attributes="value request/_submit|request/start|nothing" />
+    </div>
+    <div tal:condition="python:not ffields and not show_start" class="alert alert-warning alert-dismissible" role="alert"
+         i18n:translate="">
+      You did not specify any filterable criterias for this collection.<br />
+      Right now we can filter the criterias <i>Format</i>, <i>Info Type</i> and <i>Theme</i>.
+    </div>
+  </form>
+</div>
+<span class="clearfix"></span>
