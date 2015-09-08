@@ -140,9 +140,11 @@ class FilteredCollectionView(CollectionFilter, CollectionView):
         kwargs.setdefault('batch', True)
         kwargs.setdefault('b_size', self.b_size)
         kwargs.setdefault('b_start', self.b_start)
+        default_values = kwargs.pop('default_values', {})
 
         if bool(self.context.show_filter):
-            return self.filtered_result(**kwargs)
+            return self.filtered_result(default_values=default_values,
+                **kwargs)
         else:
             # fallback to default
             return self.collection_behavior.results(**kwargs)

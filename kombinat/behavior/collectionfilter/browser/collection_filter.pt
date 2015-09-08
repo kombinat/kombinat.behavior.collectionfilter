@@ -1,11 +1,11 @@
-<div i18n:domain="kombinat.behavior.collectionfilter"
-     tal:condition="view/available">
+<tal:block i18n:domain="kombinat.behavior.collectionfilter"
+           tal:condition="view/available">
     <form tal:attributes="action context/absolute_url"
           tal:define="ffields view/filter_fields;
                       show_start context/show_start|nothing;
                       len_ffields python:show_start and len(ffields) + 1 or len(ffields);
                       col_width python:len_ffields > 0 and 12 / len_ffields or 12"
-          class="collection-filter row">
+          class="collection-filter">
     <div tal:repeat="fld ffields"
          tal:attributes="class string:col-sm-${col_width}">
       <select class="pat-select2" size="1" name="Type"
@@ -33,5 +33,5 @@
       Right now we can filter the criterias <i>Format</i>, <i>Info Type</i> and <i>Theme</i>.
     </div>
   </form>
-</div>
+</tal:block>
 <span class="clearfix"></span>
