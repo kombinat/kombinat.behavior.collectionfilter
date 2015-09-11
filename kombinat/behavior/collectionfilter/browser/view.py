@@ -1,6 +1,7 @@
 from DateTime import DateTime
 from Products.AdvancedQuery import Generic, Between
 from logging import getLogger
+from plone import api
 from plone.app.contentlisting.interfaces import IContentListing
 from plone.app.contenttypes.browser.collection import CollectionView
 from plone.app.event.base import RET_MODE_ACCESSORS
@@ -16,6 +17,8 @@ from plone.dexterity.utils import (
 )
 from plone.memoize.instance import memoizedproperty
 from plone.memoize.view import memoize
+
+import itertools
 
 logger = getLogger(__name__)
 
@@ -57,10 +60,10 @@ class CollectionFilter(object):
         if not fdata.get('_submit') is None:
             fdata['start'] = fdata['_submit']
             del fdata['_submit']
-        _ignored_keys = ('portal_type', 'b_start', 'b_size', 'ajax_load',
-            'start')
+        _ignored_keys = ('path', 'portal_type', 'b_start', 'b_size',
+            'ajax_load', 'start')
         _allow_none = self.context.allow_empty_values_for or []
-        # AND concatenation for request values and 'portal_type'
+        # AND concatenation for request values
         AND_query = tuple([Generic(k, safe_utf8(v)) for k, v \
             in fdata.items() if v and k not in _ignored_keys])
 
@@ -74,7 +77,8 @@ class CollectionFilter(object):
 
         if not adv_q:
             for idx in ([Generic(k, map(safe_utf8, v['query'])) for k, v \
-            in pquery.items() if k != 'portal_type' and k not in _allow_none]):
+            in pquery.items() if k not in itertools.chain(
+            _ignored_keys, _allow_none)]):
                 if not adv_q:
                     adv_q = idx
                     continue
@@ -97,6 +101,15 @@ class CollectionFilter(object):
                 adv_q &= adv_val
             else:
                 adv_q = adv_val
+
+        # respect INavigationRoot or ILanguageRootFolder or ISubsite
+        path_val = Generic('path', fdata.get('path') or pquery.get('path') or \
+            '/'.join(api.portal.get_navigation_root(
+            self.context).getPhysicalPath()))
+        if adv_q:
+            adv_q &= path_val
+        else:
+            adv_q = path_val
 
         sort_on = ((getattr(self.context, 'sort_on', 'sortable_title'),
             self.context.sort_reversed and 'desc' or 'asc'), )
