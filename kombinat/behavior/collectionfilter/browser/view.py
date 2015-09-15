@@ -32,7 +32,11 @@ class CollectionFilter(object):
             return {}
         return dict([map(safe_unicode, l.split(":")) for l in dflt])
 
-    def filtered_result(self, **kwargs):
+    @property
+    def parsed_query(self):
+        return queryparser.parseFormquery(self.context, self.context.query)
+
+    def advanced_query(self, fdata):
         """
         FILTER QUERY
         the listing filter can contain arbitrary keyword indexes.
@@ -47,13 +51,8 @@ class CollectionFilter(object):
         2. Empty filter or search for portal_type only (!):
         (kw1 | kw2 | kwx | ...) & portal_type
         """
-        if 'default_values' in kwargs:
-            fdata = kwargs.pop('default_values')
-        else:
-            fdata = self.default_values
-
         adv_q = None
-        pquery = queryparser.parseFormquery(self.context, self.context.query)
+        pquery = self.parsed_query
         # setup default values and filter data
         fdata.update(self.request.form)
         # fix pickadate value
@@ -114,7 +113,15 @@ class CollectionFilter(object):
             adv_q &= path_val
         else:
             adv_q = path_val
+        return adv_q
 
+    def filtered_result(self, **kwargs):
+        if 'default_values' in kwargs:
+            fdata = kwargs.pop('default_values')
+        else:
+            fdata = self.default_values
+
+        adv_q = self.advanced_query(fdata)
         sort_on = ((getattr(self.context, 'sort_on', 'sortable_title'),
             self.context.sort_reversed and 'desc' or 'asc'), )
         try:
