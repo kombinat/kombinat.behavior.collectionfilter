@@ -9,7 +9,7 @@
     <div tal:repeat="fld ffields"
          tal:attributes="class string:col-sm-${col_width}">
       <select class="pat-select2" size="1" name="Type"
-              data-pat-select2="allowClear: true"
+              data-pat-select2="allowClear: true; minimumResultsForSearch: -1"
               tal:attributes="name fld/name;
                               data-placeholder fld/placeholder">
         <option value=""></option>
@@ -34,4 +34,4 @@
     </div>
   </form>
 </tal:block>
-<span class="clearfix"></span>
+<div class="clearfix"></div>
