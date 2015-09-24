@@ -25,8 +25,8 @@ logger = getLogger(__name__)
 
 class CollectionFilter(object):
 
-    _ignored_keys = ('path', 'portal_type', 'b_start', 'b_size', 'ajax_load',
-        'start')
+    _ignored_keys = ('b_start', 'b_size', 'ajax_load')
+    _force_AND = ('path', 'portal_type', 'start')
 
     @memoizedproperty
     def default_values(self):
@@ -57,7 +57,8 @@ class CollectionFilter(object):
         adv_q = None
         pquery = self.parsed_query
         # setup default values and filter data
-        fdata.update(self.request.form)
+        fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
+
         # fix pickadate value
         if not fdata.get('_submit') is None:
             fdata['start'] = fdata['_submit']
@@ -65,10 +66,12 @@ class CollectionFilter(object):
         _allow_none = self.context.allow_empty_values_for or []
         _subject_encode = lambda k, v: k == 'Subject' and safe_utf8(v) or \
             safe_unicode(v)
+        _or_exclude = itertools.chain(self._ignored_keys, self._force_AND,
+            _allow_none)
 
         # OR concatenation of default fields
         for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
-        if k not in itertools.chain(self._ignored_keys, _allow_none)]):
+        if k not in _or_exclude]):
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
             if adv_q:
