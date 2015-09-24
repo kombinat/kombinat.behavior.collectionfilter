@@ -25,6 +25,9 @@ logger = getLogger(__name__)
 
 class CollectionFilter(object):
 
+    _ignored_keys = ('path', 'portal_type', 'b_start', 'b_size', 'ajax_load',
+        'start')
+
     @memoizedproperty
     def default_values(self):
         dflt = self.context.default_filter_values
@@ -59,33 +62,27 @@ class CollectionFilter(object):
         if not fdata.get('_submit') is None:
             fdata['start'] = fdata['_submit']
             del fdata['_submit']
-        _ignored_keys = ('path', 'portal_type', 'b_start', 'b_size',
-            'ajax_load', 'start')
         _allow_none = self.context.allow_empty_values_for or []
-        # AND concatenation for request values
         _subject_encode = lambda k, v: k == 'Subject' and safe_utf8(v) or \
             safe_unicode(v)
-        AND_query = tuple([Generic(k, _subject_encode(k, v)) for k, v \
-            in fdata.items() if v and k not in _ignored_keys])
 
-        # XXX: there has to be a pythonic way to join a list
-        # with operators ...
-        for idx in AND_query:
-            if not adv_q:
-                adv_q = idx
-                continue
-            adv_q &= idx
-
-        if not adv_q:
-            for idx in ([Generic(k, v['query']) for k, v \
-            in pquery.items() if k not in itertools.chain(
-            _ignored_keys, _allow_none)]):
-                if idx._idx == 'Subject':
-                    idx._term = map (safe_utf8, idx._term)
-                if not adv_q:
-                    adv_q = idx
-                    continue
+        # OR concatenation of default fields
+        for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
+        if k not in itertools.chain(self._ignored_keys, _allow_none)]):
+            if idx._idx == 'Subject':
+                idx._term = map(safe_utf8, idx._term)
+            if adv_q:
                 adv_q |= idx
+            else:
+                adv_q = idx
+
+        # AND concatenation of request values
+        for idx in ([Generic(k, _subject_encode(k, v)) for k, v \
+        in fdata.items() if v and k not in self._ignored_keys]):
+            if adv_q:
+                adv_q &= idx
+            else:
+                adv_q = idx
 
         # special case for event listing filter
         if fdata.get('start'):
