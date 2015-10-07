@@ -1,7 +1,6 @@
 from DateTime import DateTime
 from Products.AdvancedQuery import Generic, Between
 from logging import getLogger
-from plone import api
 from plone.app.contentlisting.interfaces import IContentListing
 from plone.app.contenttypes.browser.collection import CollectionView
 from plone.app.event.base import RET_MODE_ACCESSORS
@@ -9,6 +8,7 @@ from plone.app.event.base import _prepare_range
 from plone.app.event.base import expand_events
 from plone.app.event.base import start_end_query
 from plone.app.event.browser.event_listing import EventListing
+from plone.app.layout.navigation.root import getNavigationRoot
 from plone.app.querystring import queryparser
 from plone.batching import Batch
 from plone.dexterity.utils import (
@@ -21,6 +21,26 @@ from plone.memoize.view import memoize
 import itertools
 
 logger = getLogger(__name__)
+
+
+class CollectionFilterQuery(object):
+
+    def __init__(self):
+        self.query = None
+
+    def __iand__(self, val):
+        if self.query is None:
+            self.query = val
+        else:
+            self.query &= val
+        return self
+
+    def __ior__(self, val):
+        if self.query is None:
+            self.query = val
+        else:
+            self.query |= val
+        return self
 
 
 class CollectionFilter(object):
@@ -54,7 +74,7 @@ class CollectionFilter(object):
         2. Empty filter or search for portal_type only (!):
         (kw1 | kw2 | kwx | ...) & portal_type
         """
-        adv_q = None
+        _q = CollectionFilterQuery()
         pquery = self.parsed_query
         # setup default values and filter data
         fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
@@ -74,46 +94,30 @@ class CollectionFilter(object):
         if k not in _or_exclude]):
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
-            if adv_q:
-                adv_q |= idx
-            else:
-                adv_q = idx
+            _q |= idx
 
         # AND concatenation of request values
         for idx in ([Generic(k, _subject_encode(k, v)) for k, v \
         in fdata.items() if v and k not in self._ignored_keys]):
-            if adv_q:
-                adv_q &= idx
-            else:
-                adv_q = idx
+            _q &= idx
 
         # special case for event listing filter
         if fdata.get('start'):
             st = DateTime("{} 00:00".format(fdata.get('start'))).asdatetime()
             se = DateTime("{} 23:59".format(fdata.get('start'))).asdatetime()
-            adv_val = Between('start', st, se)
-            if adv_q:
-                adv_q &= adv_val
-            else:
-                adv_q = adv_val
+            _q &= Between('start', st, se)
+        elif pquery.get('start'):
+            _q &= Generic('start', pquery.get('start'))
 
         if fdata.get('portal_type') or pquery.get('portal_type'):
-            adv_val = Generic('portal_type', fdata.get('portal_type') or \
+            _q &= Generic('portal_type', fdata.get('portal_type') or \
                 pquery.get('portal_type'))
-            if adv_q:
-                adv_q &= adv_val
-            else:
-                adv_q = adv_val
 
         # respect INavigationRoot or ILanguageRootFolder or ISubsite
-        path_val = Generic('path', fdata.get('path') or pquery.get('path') or \
-            '/'.join(api.portal.get_navigation_root(
-            self.context).getPhysicalPath()))
-        if adv_q:
-            adv_q &= path_val
-        else:
-            adv_q = path_val
-        return adv_q
+        _q &= Generic('path', fdata.get('path') or pquery.get('path') or \
+            getNavigationRoot(self.context))
+
+        return _q.query
 
     def filtered_result(self, **kwargs):
         if 'default_values' in kwargs:
@@ -121,13 +125,12 @@ class CollectionFilter(object):
         else:
             fdata = self.default_values
 
-        adv_q = self.advanced_query(fdata)
+        _q = self.advanced_query(fdata)
         sort_on = ((getattr(self.context, 'sort_on', 'sortable_title'),
             self.context.sort_reversed and 'desc' or 'asc'), )
         try:
-            logger.info(adv_q)
-            _res = self.context.portal_catalog.evalAdvancedQuery(adv_q,
-                sort_on)
+            logger.info(_q)
+            _res = self.context.portal_catalog.evalAdvancedQuery(_q, sort_on)
             listing = IContentListing(_res)
             if kwargs.get('batch', False):
                 return Batch(listing, kwargs.get('b_size', 100),
