@@ -25,7 +25,7 @@ logger = getLogger(__name__)
 
 class CollectionFilter(object):
 
-    _ignored_keys = ('b_start', 'b_size', 'ajax_load')
+    _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator')
     _force_AND = ('path', 'portal_type', 'start')
 
     @memoizedproperty

@@ -27,7 +27,6 @@
       title="Collection Filter"
       description="Toggle collection filter visibility"
       provides=".behavior.ICollectionFilter"
-      for="plone.dexterity.interfaces.IDexterityContent"
       />
 
 </configure>
