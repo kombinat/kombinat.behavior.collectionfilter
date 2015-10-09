@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2015-09-07 06:29+0000\n"
-"PO-Revision-Date: 2015-09-07 09:02+0200\n"
+"PO-Revision-Date: 2015-10-09 08:38+0200\n"
 "Last-Translator: Peter Mathis <peter.mathis@kombinat.at>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 "Language: de\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.5\n"
 
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:18
 msgid "-- all Locations --"
@@ -38,7 +38,9 @@ msgstr "Standard Filterwerte"
 
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:22
 msgid "Set default values with key:value in each line"
-msgstr "Standardwerte setzen mit \"Feldname:Wert\""
+msgstr ""
+"Standardwerte setzen mit \"Feldname:Wert\"<br />\n"
+"z.B: portal_type:Document"
 
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:38
 msgid "Show 'Startdate' selector"
@@ -63,6 +65,4 @@ msgstr "Sie haben keine filterbaren Kriterien in dieser Kollektion angegeben."
 #. Default: "Fieldnames provided here can be empty"
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:30
 msgid "help_allow_empty_values"
-msgstr ""
-"Hier angegebene Felder können auch \"leer\" sein, d.h. Sie werden im Query nicht berücksichtig. Andernfalls muss zwingend eines der angegebenen Werte im Suchquery vorkommen.<br />\n"
-"z.B: portal_type:Document"
+msgstr "Hier angegebene Felder können auch \"leer\" sein, d.h. Sie werden im Query nicht berücksichtig. Andernfalls muss zwingend eines der angegebenen Werte im Suchquery vorkommen."
