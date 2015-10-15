@@ -169,7 +169,7 @@ class FilteredCollectionView(CollectionFilter, CollectionView):
         kwargs.setdefault('b_start', self.b_start)
         default_values = kwargs.pop('default_values', {})
 
-        if bool(self.context.show_filter):
+        if bool(getattr(self.context, 'show_filter', None)):
             return self.filtered_result(default_values=default_values,
                 **kwargs)
         else:
