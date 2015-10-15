@@ -30,7 +30,7 @@ class CollectionFilterViewlet(common.ViewletBase):
     index = ViewPageTemplateFile('collection_filter.pt')
 
     def available(self):
-        return bool(self.context.show_filter)
+        return bool(getattr(self.context, 'show_filter'))
 
     def filter_fields(self):
         fields = ()
