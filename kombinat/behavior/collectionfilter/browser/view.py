@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
 from DateTime import DateTime
-from Products.AdvancedQuery import Generic, Between
+from Products.AdvancedQuery import Between
+from Products.AdvancedQuery import Ge
+from Products.AdvancedQuery import Generic
+from cStringIO import StringIO
 from logging import getLogger
+from plone import api
 from plone.app.contentlisting.interfaces import IContentListing
 from plone.app.contenttypes.browser.collection import CollectionView
 from plone.app.event.base import RET_MODE_ACCESSORS
@@ -11,13 +16,11 @@ from plone.app.event.browser.event_listing import EventListing
 from plone.app.layout.navigation.root import getNavigationRoot
 from plone.app.querystring import queryparser
 from plone.batching import Batch
-from plone.dexterity.utils import (
-    safe_unicode,
-    safe_utf8,
-)
+from plone.dexterity.utils import safe_unicode
+from plone.dexterity.utils import safe_utf8
+from plone.memoize import ram
 from plone.memoize.instance import memoizedproperty
 from plone.memoize.view import memoize
-
 import itertools
 
 logger = getLogger(__name__)
@@ -41,6 +44,16 @@ class CollectionFilterQuery(object):
         else:
             self.query |= val
         return self
+
+
+def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
+                               b_start=0):
+    _ckey = StringIO()
+    user = api.user.get_current()
+    print >> _ckey, str(_q) + str(sort_on) + str(batch) + \
+        str(b_size) + str(b_start)
+    print >> _ckey, str(api.user.get_roles(user=user, obj=self.context))
+    return _ckey.getvalue()
 
 
 class CollectionFilter(object):
@@ -107,7 +120,12 @@ class CollectionFilter(object):
             se = DateTime("{} 23:59".format(fdata.get('start'))).asdatetime()
             _q &= Between('start', st, se)
         elif pquery.get('start'):
-            _q &= Generic('start', pquery.get('start'))
+            try:
+                st = DateTime(pquery['start']['query'].strftime(
+                    '%Y-%m-%d %H:%M')).asdatetime()
+                _q &= Ge('start', st)
+            except TypeError:
+                pass
 
         if fdata.get('portal_type') or pquery.get('portal_type'):
             _q &= Generic('portal_type', fdata.get('portal_type') or \
@@ -129,19 +147,25 @@ class CollectionFilter(object):
         sort_on = ((getattr(self.context, 'sort_on', 'sortable_title'),
             self.context.sort_reversed and 'desc' or 'asc'), )
         try:
-            logger.info(_q)
-            _res = self.context.portal_catalog.evalAdvancedQuery(_q, sort_on)
-            listing = IContentListing(_res)
-            if kwargs.get('batch', False):
-                return Batch(listing, kwargs.get('b_size', 100),
-                    start=kwargs.get('b_start', 0))
-            return listing
+            return self._eval_advanced_query(
+                _q, sort_on, kwargs.get('batch', False),
+                kwargs.get('b_size', 100), kwargs.get('b_start', 0))
         except Exception, msg:
             logger.info("Could not apply filtered search: {}, {}".format(
                 msg, fdata))
 
         # fallback to default
         return self.collection_behavior.results(**kwargs)
+
+    @ram.cache(_filtered_results_cachekey)
+    def _eval_advanced_query(self, _q, sort_on, batch=False, b_size=100,
+                             b_start=0):
+        logger.info(_q)
+        _res = self.context.portal_catalog.evalAdvancedQuery(_q, sort_on)
+        listing = IContentListing(_res)
+        if batch:
+            return Batch(listing, b_size, start=b_start)
+        return listing
 
 
 class FilteredCollectionView(CollectionFilter, CollectionView):
