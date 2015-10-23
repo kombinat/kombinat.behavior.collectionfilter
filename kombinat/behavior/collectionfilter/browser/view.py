@@ -49,10 +49,13 @@ class CollectionFilterQuery(object):
 def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
                                b_start=0):
     _ckey = StringIO()
-    user = api.user.get_current()
     print >> _ckey, str(_q) + str(sort_on) + str(batch) + \
         str(b_size) + str(b_start)
-    print >> _ckey, str(api.user.get_roles(user=user, obj=self.context))
+    user = api.user.get_current()
+    try:
+        print >> _ckey, str(api.user.get_roles(user=user, obj=self.context))
+    except api.exc.UserNotFoundError:
+        pass
     return _ckey.getvalue()
 
 
@@ -151,8 +154,8 @@ class CollectionFilter(object):
                 _q, sort_on, kwargs.get('batch', False),
                 kwargs.get('b_size', 100), kwargs.get('b_start', 0))
         except Exception, msg:
-            logger.info("Could not apply filtered search: {}, {}".format(
-                msg, fdata))
+            logger.info("Could not apply filtered search: {}, {} {}".format(
+                msg, fdata, _q))
 
         # fallback to default
         return self.collection_behavior.results(**kwargs)
