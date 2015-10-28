@@ -35,6 +35,15 @@ class ICollectionFilter(form.Schema):
         value_type=schema.TextLine(),
     )
 
+    ignore_fields = schema.List(
+        title=_(u"Ignore Fields"),
+        description=_("help_ignore_fields",
+            default=u"Which fields should be ignored in the filter"),
+        required=False,
+        default=[],
+        value_type=schema.TextLine(),
+    )
+
     show_start = schema.Bool(
         title=_(u"Show 'Startdate' selector"),
         required=False,
@@ -42,4 +51,4 @@ class ICollectionFilter(form.Schema):
     )
 
     model.fieldset('settings', fields=['show_filter', 'default_filter_values',
-        'allow_empty_values_for', 'show_start'])
+        'allow_empty_values_for', 'show_start', 'ignore_fields'])

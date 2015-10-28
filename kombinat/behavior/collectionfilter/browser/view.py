@@ -100,10 +100,8 @@ class CollectionFilter(object):
             fdata['start'] = fdata['_submit']
             del fdata['_submit']
         _allow_none = self.context.allow_empty_values_for or []
-        _subject_encode = lambda k, v: k == 'Subject' and safe_utf8(v) or \
-            safe_unicode(v)
-        _or_exclude = itertools.chain(self._ignored_keys, self._force_AND,
-            _allow_none)
+        _or_exclude = itertools.chain(
+            self._ignored_keys, self._force_AND, _allow_none)
 
         # OR concatenation of default fields
         for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
@@ -111,6 +109,9 @@ class CollectionFilter(object):
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
             _q |= idx
+
+        def _subject_encode(k, v):
+            return k == 'Subject' and safe_utf8(v) or safe_unicode(v)
 
         # AND concatenation of request values
         for idx in ([Generic(k, _subject_encode(k, v)) for k, v \

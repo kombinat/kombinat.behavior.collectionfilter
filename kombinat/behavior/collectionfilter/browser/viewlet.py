@@ -50,6 +50,9 @@ class CollectionFilterViewlet(common.ViewletBase):
             vocab_map = FILTER_VOCABULARY_MAP or {}
 
         for idx in trans_map.keys():
+            if idx in (self.context.ignore_fields or []):
+                # visibility of filter fields
+                continue
             qvals = p_query.get(idx, {}).get('query', [])
             i_sel = safe_unicode(self.request.get(idx) or d_vals.get(idx))
             label_vocab = vocab_map.get(idx,
