@@ -62,7 +62,7 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
 class CollectionFilter(object):
 
     _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator',
-        '_filter_start')
+        '_filter_start', 'start')
     _force_AND = ('path', 'portal_type')
 
     @memoizedproperty
