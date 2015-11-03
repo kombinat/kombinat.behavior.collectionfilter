@@ -23,9 +23,9 @@
     <div tal:condition="show_start"
          tal:attributes="class string:col-sm-${col_width}">
       <input type="text" name="start" class="pat-pickadate"
-             data-pat-pickadate='time:false;placeholderDate:Wann' placeholder="When"
+             data-pat-pickadate='{"time":false, "placeholderDate": "Wann", "date": {"hiddenSuffix": "_filter_start"}}' placeholder="When"
         i18n:attributes="placeholder"
-        tal:attributes="value request/_submit|request/start|nothing" />
+        tal:attributes="value request/_filter_start|nothing" />
     </div>
     <div tal:condition="python:not ffields and not show_start" class="alert alert-warning alert-dismissible" role="alert"
          i18n:translate="">

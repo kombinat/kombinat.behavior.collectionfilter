@@ -62,7 +62,7 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
 class CollectionFilter(object):
 
     _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator',
-                     'start')
+        '_filter_start')
     _force_AND = ('path', 'portal_type')
 
     @memoizedproperty
@@ -93,16 +93,12 @@ class CollectionFilter(object):
         """
         _q = CollectionFilterQuery()
         pquery = self.parsed_query
-        # setup default values and filter data
-        fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
-
-        # fix pickadate value
-        if fdata.get('_submit') is not None:
-            fdata['start'] = fdata['_submit']
-            del fdata['_submit']
         _allow_none = self.context.allow_empty_values_for or []
         _or_exclude = itertools.chain(
             self._ignored_keys, self._force_AND, _allow_none)
+
+        # setup default values and filter data
+        fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
 
         # OR concatenation of default fields
         for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
@@ -120,9 +116,9 @@ class CollectionFilter(object):
             _q &= idx
 
         # special case for event listing filter
-        if fdata.get('start'):
-            st = DateTime(fdata.get('start')).earliestTime()
-            se = DateTime(fdata.get('start')).latestTime()
+        if fdata.get('_filter_start'):
+            st = DateTime(fdata.get('_filter_start')).earliestTime()
+            se = DateTime(fdata.get('_filter_start')).latestTime()
             _q &= Between('start', st, se)
         elif pquery.get('start'):
             try:
