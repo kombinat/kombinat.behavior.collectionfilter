@@ -61,8 +61,9 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
 
 class CollectionFilter(object):
 
-    _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator')
-    _force_AND = ('path', 'portal_type', 'start')
+    _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator',
+                     'start')
+    _force_AND = ('path', 'portal_type')
 
     @memoizedproperty
     def default_values(self):
@@ -96,7 +97,7 @@ class CollectionFilter(object):
         fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
 
         # fix pickadate value
-        if not fdata.get('_submit') is None:
+        if fdata.get('_submit') is not None:
             fdata['start'] = fdata['_submit']
             del fdata['_submit']
         _allow_none = self.context.allow_empty_values_for or []
@@ -120,8 +121,8 @@ class CollectionFilter(object):
 
         # special case for event listing filter
         if fdata.get('start'):
-            st = DateTime("{} 00:00".format(fdata.get('start'))).asdatetime()
-            se = DateTime("{} 23:59".format(fdata.get('start'))).asdatetime()
+            st = DateTime(fdata.get('start')).earliestTime()
+            se = DateTime(fdata.get('start')).latestTime()
             _q &= Between('start', st, se)
         elif pquery.get('start'):
             try:

@@ -50,7 +50,7 @@ class CollectionFilterViewlet(common.ViewletBase):
             vocab_map = FILTER_VOCABULARY_MAP or {}
 
         for idx in trans_map.keys():
-            if idx in (self.context.ignore_fields or []):
+            if idx in (getattr(self.context, 'ignore_fields', []) or []):
                 # visibility of filter fields
                 continue
             qvals = p_query.get(idx, {}).get('query', [])
