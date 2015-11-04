@@ -61,9 +61,9 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
 
 class CollectionFilter(object):
 
-    _ignored_keys = ('b_start', 'b_size', 'ajax_load', '_authenticator',
-        '_filter_start', 'start')
-    _force_AND = ('path', 'portal_type')
+    _ignored_keys = (u'b_start', u'b_size', u'ajax_load', u'_authenticator',
+        u'_filter_start', u'start')
+    _force_AND = (u'path', u'portal_type')
 
     @memoizedproperty
     def default_values(self):
@@ -94,8 +94,8 @@ class CollectionFilter(object):
         _q = CollectionFilterQuery()
         pquery = self.parsed_query
         _allow_none = self.context.allow_empty_values_for or []
-        _or_exclude = itertools.chain(
-            self._ignored_keys, self._force_AND, _allow_none)
+        _or_exclude = list(itertools.chain(
+            self._ignored_keys, self._force_AND, _allow_none))
 
         # setup default values and filter data
         fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
@@ -121,12 +121,7 @@ class CollectionFilter(object):
             se = DateTime(fdata.get('_filter_start')).latestTime()
             _q &= Between('start', st, se)
         elif pquery.get('start'):
-            try:
-                st = DateTime(pquery['start']['query'].strftime(
-                    '%Y-%m-%d %H:%M')).asdatetime()
-                _q &= Ge('start', st)
-            except TypeError:
-                pass
+            _q &= Generic('start', pquery['start'])
 
         if fdata.get('portal_type') or pquery.get('portal_type'):
             _q &= Generic('portal_type', fdata.get('portal_type') or \
