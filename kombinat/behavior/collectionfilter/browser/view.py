@@ -199,7 +199,6 @@ class FilteredCollectionView(CollectionFilter, CollectionView):
 
 class FilteredEventListing(CollectionFilter, EventListing):
 
-    @memoize
     def events(self, ret_mode=RET_MODE_ACCESSORS, expand=True, batch=True):
         res = []
         if self.is_collection:

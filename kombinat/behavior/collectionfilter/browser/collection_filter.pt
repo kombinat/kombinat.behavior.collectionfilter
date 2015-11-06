@@ -5,7 +5,7 @@
                       show_start context/show_start|nothing;
                       len_ffields python:show_start and len(ffields) + 1 or len(ffields);
                       col_width python:len_ffields > 0 and 12 / len_ffields or 12"
-          class="collection-filter row">
+          class="collection-filter row visualNoPrint">
     <div tal:repeat="fld ffields"
          tal:attributes="class string:col-sm-${col_width}">
       <select class="pat-select2" size="1" name="Type"
