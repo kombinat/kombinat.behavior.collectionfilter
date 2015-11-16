@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
 from Products.AdvancedQuery import Between
-from Products.AdvancedQuery import Ge
 from Products.AdvancedQuery import Generic
 from cStringIO import StringIO
 from logging import getLogger
@@ -20,7 +19,6 @@ from plone.dexterity.utils import safe_unicode
 from plone.dexterity.utils import safe_utf8
 from plone.memoize import ram
 from plone.memoize.instance import memoizedproperty
-from plone.memoize.view import memoize
 import itertools
 
 logger = getLogger(__name__)
@@ -50,7 +48,8 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
                                b_start=0):
     _ckey = StringIO()
     print >> _ckey, str(_q) + str(sort_on) + str(batch) + \
-        str(b_size) + str(b_start)
+        str(b_size) + str(b_start) + \
+        str(self.context.portal_catalog.getCounter())
     user = api.user.get_current()
     try:
         print >> _ckey, str(api.user.get_roles(user=user, obj=self.context))
