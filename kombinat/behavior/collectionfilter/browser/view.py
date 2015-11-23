@@ -139,8 +139,8 @@ class CollectionFilter(object):
             fdata = self.default_values
 
         _q = self.advanced_query(fdata)
-        sort_on = ((getattr(self.context, 'sort_on', 'sortable_title'),
-            self.context.sort_reversed and 'desc' or 'asc'), )
+        sort_key = getattr(self.context, 'sort_on', 'sortable_title')
+        sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
         try:
             return self._eval_advanced_query(
                 _q, sort_on, kwargs.get('batch', False),
@@ -155,7 +155,7 @@ class CollectionFilter(object):
     @ram.cache(_filtered_results_cachekey)
     def _eval_advanced_query(self, _q, sort_on, batch=False, b_size=100,
                              b_start=0):
-        logger.info(_q)
+        logger.debug(_q)
         _res = self.context.portal_catalog.evalAdvancedQuery(_q, sort_on)
         listing = IContentListing(_res)
         if batch:
