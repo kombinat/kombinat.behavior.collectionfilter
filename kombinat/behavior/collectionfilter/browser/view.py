@@ -152,7 +152,6 @@ class CollectionFilter(object):
         # fallback to default
         return self.collection_behavior.results(**kwargs)
 
-    @ram.cache(_filtered_results_cachekey)
     def _eval_advanced_query(self, _q, sort_on, batch=False, b_size=100,
                              b_start=0):
         logger.debug(_q)
