@@ -220,9 +220,18 @@ class FilteredEventListing(CollectionFilter, EventListing):
             if expand:
                 # get start and end values from the query to ensure limited
                 # listing for occurrences
-                start, end = self._expand_events_start_end(
-                    query.get('start') or custom_query.get('start'),
-                    query.get('end') or custom_query.get('end'))
+                _filter_start = self.request.get('_filter_start')
+                if _filter_start:
+                    # check for pickadate day filtering
+                    fs = DateTime(_filter_start).earliestTime()
+                    fe = DateTime(_filter_start).latestTime()
+                    start, end = self._expand_events_start_end(
+                        dict(query=fs, range='min'),
+                        dict(query=fe, range='max'))
+                else:
+                    start, end = self._expand_events_start_end(
+                        query.get('start') or custom_query.get('start'),
+                        query.get('end') or custom_query.get('end'))
                 res = expand_events(
                     res, ret_mode,
                     start=start, end=end,
