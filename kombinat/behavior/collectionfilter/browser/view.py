@@ -201,21 +201,31 @@ class CollectionFilter(object):
     def solr_query_builder(self, fdata, pquery):
         """ build query for solr search """
         fdata.update(self.get_request_data())
-        and_q = dict([(k, self.safe_subject_encode(k, v)) for k, v \
+        query = dict([(k, self.safe_subject_encode(k, v)) for k, v \
             in fdata.items() if k not in self.ignored_keys])
-        or_exclude = set(self.OR_exclude()).union(and_q.keys())
+        or_exclude = set(self.OR_exclude()).union(query.keys())
         or_q = dict([(k, v.get('query', v)) for k, v in pquery.items() \
             if k not in or_exclude])
-        and_q.update(or_q)
+        query.update(or_q)
 
         # special case for event listing filter
         if fdata.get(self.start_filter):
             st = DateTime(fdata[self.start_filter]).earliestTime()
             se = DateTime(fdata[self.start_filter]).latestTime()
-            and_q.update({'start': {'query': [st, se], 'range': 'minmax'}})
+            query.update({'start': {'query': [st, se], 'range': 'minmax'}})
         elif pquery.get('start'):
-            and_q.update({'start': pquery['start']})
-        return and_q
+            query.update({'start': pquery['start']})
+
+        # portal type
+        if fdata.get('portal_type') or pquery.get('portal_type'):
+            query.update({'portal_type': fdata.get('portal_type') or \
+                pquery.get('portal_type')})
+
+        # path
+        query.update({'path': fdata.get('path') or pquery.get('path') or \
+            getNavigationRoot(self.context)})
+
+        return query
 
 
 class FilteredCollectionView(CollectionView):
