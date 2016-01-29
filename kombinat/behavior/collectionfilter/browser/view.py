@@ -3,10 +3,12 @@ from DateTime import DateTime
 from Products.AdvancedQuery import Between
 from Products.AdvancedQuery import Generic
 from cStringIO import StringIO
+from kombinat.behavior.collectionfilter.interfaces import ICollectionFilter
 from logging import getLogger
 from plone import api
 from plone.app.contentlisting.interfaces import IContentListing
 from plone.app.contenttypes.browser.collection import CollectionView
+from plone.app.contenttypes.interfaces import ICollection
 from plone.app.event.base import RET_MODE_ACCESSORS
 from plone.app.event.base import _prepare_range
 from plone.app.event.base import expand_events
@@ -17,14 +19,26 @@ from plone.app.querystring import queryparser
 from plone.batching import Batch
 from plone.dexterity.utils import safe_unicode
 from plone.dexterity.utils import safe_utf8
-from plone.memoize import ram
+from plone.memoize.instance import memoize
 from plone.memoize.instance import memoizedproperty
+from zope.component import adapter
+from zope.interface import implementer
 import itertools
+import pkg_resources
+
+try:
+    pkg_resources.get_distribution('collective.solr')
+except pkg_resources.DistributionNotFound:
+    HAS_SOLR = False
+    solrIsActive = lambda: False
+else:
+    from collective.solr.utils import isActive as solrIsActive
+    HAS_SOLR = True
 
 logger = getLogger(__name__)
 
 
-class CollectionFilterQuery(object):
+class CollectionFilterAdvancedQuery(object):
 
     def __init__(self):
         self.query = None
@@ -58,11 +72,17 @@ def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
     return _ckey.getvalue()
 
 
+@adapter(ICollection)
+@implementer(ICollectionFilter)
 class CollectionFilter(object):
 
-    _ignored_keys = (u'b_start', u'b_size', u'ajax_load', u'_authenticator',
+    ignored_keys = (u'b_start', u'b_size', u'ajax_load', u'_authenticator',
         u'_filter_start', u'start', u'mode')
-    _force_AND = (u'path', u'portal_type')
+    force_AND = (u'path', u'portal_type')
+    start_filter = '_filter_start'
+
+    def __init__(self, context):
+        self.context = context
 
     @memoizedproperty
     def default_values(self):
@@ -75,7 +95,62 @@ class CollectionFilter(object):
     def parsed_query(self):
         return queryparser.parseFormquery(self.context, self.context.query)
 
-    def advanced_query(self, fdata):
+    def filtered_result(self, **kwargs):
+        if 'default_values' in kwargs:
+            fdata = kwargs.pop('default_values')
+        else:
+            fdata = self.default_values
+
+        pquery = kwargs.pop('pquery', self.parsed_query)
+        sort_key = pquery.pop('sort_on', 'sortable_title')
+        try:
+            return self.filtered_query(pquery, fdata, sort_key,
+                kwargs.get('batch', False), kwargs.get('b_size', 100),
+                kwargs.get('b_start', 0))
+        except Exception, msg:
+            logger.info("Could not apply filtered search: %s, %s %s",
+                msg, fdata, pquery)
+
+    def filtered_query(self, pquery, fdata, sort_key, batch, b_size, b_start):
+        if HAS_SOLR and solrIsActive():
+            result = self.solr_query(pquery, fdata)
+        else:
+            result = self.advanced_query(pquery, fdata, sort_key)
+        listing = IContentListing(result)
+        if batch:
+            return Batch(listing, b_size, start=b_start)
+        return listing
+
+    def advanced_query(self, pquery, fdata, sort_key):
+        sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
+        q = self.advanced_query_builder(fdata, pquery=pquery)
+        logger.info("AdvancedQuery: %s", q)
+        return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
+
+    def solr_query(self, pquery, fdata):
+        q = self.solr_query_builder(fdata, pquery)
+        logger.info("SOLR query: %s", q)
+        return self.context.portal_catalog.searchResults(q)
+
+    @memoize
+    def OR_exclude(self):
+        allow_none = self.context.allow_empty_values_for or []
+        return list(itertools.chain(
+            self.ignored_keys, self.force_AND, allow_none))
+
+    @memoize
+    def get_request_data(self):
+        request = self.context.REQUEST
+        req_allowed = set([x['i'] for x in self.context.query])
+        # add special keys here
+        req_allowed.add(self.start_filter)
+        return dict([(k, v) for k, v in request.items() if k in req_allowed \
+            and v])
+
+    def safe_subject_encode(self, k, v):
+        return k == 'Subject' and safe_utf8(v) or safe_unicode(v)
+
+    def advanced_query_builder(self, fdata, pquery=None):
         """
         FILTER QUERY
         the listing filter can contain arbitrary keyword indexes.
@@ -90,32 +165,23 @@ class CollectionFilter(object):
         2. Empty filter or search for portal_type only (!):
         (kw1 | kw2 | kwx | ...) & portal_type
         """
-        _q = CollectionFilterQuery()
-        pquery = self.parsed_query
-        _allow_none = self.context.allow_empty_values_for or []
-        _or_exclude = list(itertools.chain(
-            self._ignored_keys, self._force_AND, _allow_none))
-
-        # setup default values and filter data
-        fdata.update(dict([(k, v) for k, v in self.request.form.items() if v]))
+        _q = CollectionFilterAdvancedQuery()
+        fdata.update(self.get_request_data())
 
         # OR concatenation of default fields
         for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
-        if k not in _or_exclude]):
+        if k not in self.OR_exclude()]):
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
             _q |= idx
 
-        def _subject_encode(k, v):
-            return k == 'Subject' and safe_utf8(v) or safe_unicode(v)
-
         # AND concatenation of request values
-        for idx in ([Generic(k, _subject_encode(k, v)) for k, v \
-        in fdata.items() if v and k not in self._ignored_keys]):
+        for idx in ([Generic(k, self.safe_subject_encode(k, v)) for k, v \
+        in fdata.items() if v and k not in self.ignored_keys]):
             _q &= idx
 
         # special case for event listing filter
-        if fdata.get('_filter_start'):
+        if fdata.get(self.start_filter):
             st = DateTime(fdata.get('_filter_start')).earliestTime()
             se = DateTime(fdata.get('_filter_start')).latestTime()
             _q &= Between('start', st, se)
@@ -132,37 +198,27 @@ class CollectionFilter(object):
 
         return _q.query
 
-    def filtered_result(self, **kwargs):
-        if 'default_values' in kwargs:
-            fdata = kwargs.pop('default_values')
-        else:
-            fdata = self.default_values
+    def solr_query_builder(self, fdata, pquery):
+        """ build query for solr search """
+        fdata.update(self.get_request_data())
+        and_q = dict([(k, self.safe_subject_encode(k, v)) for k, v \
+            in fdata.items() if k not in self.ignored_keys])
+        or_exclude = set(self.OR_exclude()).union(and_q.keys())
+        or_q = dict([(k, v.get('query', v)) for k, v in pquery.items() \
+            if k not in or_exclude])
+        and_q.update(or_q)
 
-        _q = self.advanced_query(fdata)
-        sort_key = getattr(self.context, 'sort_on', 'sortable_title')
-        sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
-        try:
-            return self._eval_advanced_query(
-                _q, sort_on, kwargs.get('batch', False),
-                kwargs.get('b_size', 100), kwargs.get('b_start', 0))
-        except Exception, msg:
-            logger.info("Could not apply filtered search: {}, {} {}".format(
-                msg, fdata, _q))
-
-        # fallback to default
-        return self.collection_behavior.results(**kwargs)
-
-    def _eval_advanced_query(self, _q, sort_on, batch=False, b_size=100,
-                             b_start=0):
-        logger.debug(_q)
-        _res = self.context.portal_catalog.evalAdvancedQuery(_q, sort_on)
-        listing = IContentListing(_res)
-        if batch:
-            return Batch(listing, b_size, start=b_start)
-        return listing
+        # special case for event listing filter
+        if fdata.get(self.start_filter):
+            st = DateTime(fdata[self.start_filter]).earliestTime()
+            se = DateTime(fdata[self.start_filter]).latestTime()
+            and_q.update({'start': {'query': [st, se], 'range': 'minmax'}})
+        elif pquery.get('start'):
+            and_q.update({'start': pquery['start']})
+        return and_q
 
 
-class FilteredCollectionView(CollectionFilter, CollectionView):
+class FilteredCollectionView(CollectionView):
 
     b_size = 100
 
@@ -188,14 +244,17 @@ class FilteredCollectionView(CollectionFilter, CollectionView):
         default_values = kwargs.pop('default_values', {})
 
         if bool(getattr(self.context, 'show_filter', None)):
-            return self.filtered_result(default_values=default_values,
-                **kwargs)
-        else:
-            # fallback to default
-            return self.collection_behavior.results(**kwargs)
+            fc_adapter = ICollectionFilter(self.context)
+            filtered_result = fc_adapter.filtered_result(
+                default_values=default_values, **kwargs)
+            if filtered_result:
+                return filtered_result
+
+        # fallback to default
+        return self.collection_behavior.results(**kwargs)
 
 
-class FilteredEventListing(CollectionFilter, EventListing):
+class FilteredEventListing(EventListing):
 
     def events(self, ret_mode=RET_MODE_ACCESSORS, expand=True, batch=True):
         res = []
@@ -215,8 +274,13 @@ class FilteredEventListing(CollectionFilter, EventListing):
                 start, end = _prepare_range(ctx, start, end)
                 custom_query.update(start_end_query(start, end))
             # BAM ... inject our filter viewlet values
-            res = self.filtered_result(
-                batch=False, brains=True, custom_query=custom_query)
+            fc_adapter = ICollectionFilter(ctx)
+            res = fc_adapter.filtered_result(pquery=query, batch=False,
+                custom_query=custom_query)
+            if res is None:
+                # ORIGINAL
+                res = ctx.results(batch=False, brains=True,
+                    custom_query=custom_query)
             if expand:
                 # get start and end values from the query to ensure limited
                 # listing for occurrences

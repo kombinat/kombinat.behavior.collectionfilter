@@ -4,6 +4,8 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     i18n_domain="kombinat.behavior.collectionfilter">
 
+    <adapter factory=".view.CollectionFilter" />
+
     <browser:page
         name="summary_view"
         for="plone.app.contenttypes.behaviors.collection.ISyndicatableCollection"

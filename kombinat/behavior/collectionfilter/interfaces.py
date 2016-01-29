@@ -13,3 +13,7 @@ class ICollectionFilterEventLayer(IEventBrowserLayer):
 
 class ICollectionFilterPACLayer(IPloneAppContenttypesLayer):
     """ override plone.app.contenttypes browserlayer views"""
+
+
+class ICollectionFilter(Interface):
+    """ interface for filter adapter """
