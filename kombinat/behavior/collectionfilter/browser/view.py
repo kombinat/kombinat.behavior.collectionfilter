@@ -300,8 +300,7 @@ class FilteredEventListing(EventListing):
                     fs = DateTime(_filter_start).earliestTime()
                     fe = DateTime(_filter_start).latestTime()
                     start, end = self._expand_events_start_end(
-                        dict(query=fs, range='min'),
-                        dict(query=fe, range='max'))
+                        dict(query=[fs, fe], range='minmax'), None)
                 else:
                     start, end = self._expand_events_start_end(
                         query.get('start') or custom_query.get('start'),
