@@ -102,26 +102,26 @@ class CollectionFilter(object):
             fdata = self.default_values
 
         pquery = kwargs.pop('pquery', self.parsed_query)
-        sort_key = pquery.pop('sort_on', 'sortable_title')
         try:
-            return self.filtered_query(pquery, fdata, sort_key,
+            return self.filtered_query(pquery, fdata,
                 kwargs.get('batch', False), kwargs.get('b_size', 100),
                 kwargs.get('b_start', 0))
         except Exception, msg:
             logger.info("Could not apply filtered search: %s, %s %s",
                 msg, fdata, pquery)
 
-    def filtered_query(self, pquery, fdata, sort_key, batch, b_size, b_start):
+    def filtered_query(self, pquery, fdata, batch, b_size, b_start):
         if HAS_SOLR and solrIsActive():
             result = self.solr_query(pquery, fdata)
         else:
-            result = self.advanced_query(pquery, fdata, sort_key)
+            result = self.advanced_query(pquery, fdata)
         listing = IContentListing(result)
         if batch:
             return Batch(listing, b_size, start=b_start)
         return listing
 
-    def advanced_query(self, pquery, fdata, sort_key):
+    def advanced_query(self, pquery, fdata):
+        sort_key = pquery.pop('sort_on', 'sortable_title')
         sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
         logger.info("AdvancedQuery: %s", q)
@@ -129,6 +129,9 @@ class CollectionFilter(object):
 
     def solr_query(self, pquery, fdata):
         q = self.solr_query_builder(fdata, pquery)
+        q.update({'sort_on': pquery.pop('sort_on', 'sortable_title')})
+        q.update(
+            {'sort_order': self.context.sort_reversed and 'desc' or 'asc'})
         logger.info("SOLR query: %s", q)
         return self.context.portal_catalog.searchResults(q)
 
