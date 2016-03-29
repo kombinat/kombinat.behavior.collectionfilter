@@ -2,10 +2,8 @@
 from DateTime import DateTime
 from Products.AdvancedQuery import Between
 from Products.AdvancedQuery import Generic
-from cStringIO import StringIO
 from kombinat.behavior.collectionfilter.interfaces import ICollectionFilter
 from logging import getLogger
-from plone import api
 from plone.app.contentlisting.interfaces import IContentListing
 from plone.app.contenttypes.browser.collection import CollectionView
 from plone.app.contenttypes.interfaces import ICollection
@@ -19,8 +17,6 @@ from plone.app.querystring import queryparser
 from plone.batching import Batch
 from plone.dexterity.utils import safe_unicode
 from plone.dexterity.utils import safe_utf8
-from plone.memoize.instance import memoize
-from plone.memoize.instance import memoizedproperty
 from zope.component import adapter
 from zope.interface import implementer
 import itertools
@@ -58,20 +54,6 @@ class CollectionFilterAdvancedQuery(object):
         return self
 
 
-def _filtered_results_cachekey(fun, self, _q, sort_on, batch=False, b_size=100,
-                               b_start=0):
-    _ckey = StringIO()
-    print >> _ckey, str(_q) + str(sort_on) + str(batch) + \
-        str(b_size) + str(b_start) + \
-        str(self.context.portal_catalog.getCounter())
-    user = api.user.get_current()
-    try:
-        print >> _ckey, str(api.user.get_roles(user=user, obj=self.context))
-    except api.exc.UserNotFoundError:
-        pass
-    return _ckey.getvalue()
-
-
 @adapter(ICollection)
 @implementer(ICollectionFilter)
 class CollectionFilter(object):
@@ -84,7 +66,6 @@ class CollectionFilter(object):
     def __init__(self, context):
         self.context = context
 
-    @memoizedproperty
     def default_values(self):
         dflt = self.context.default_filter_values
         if not dflt:
@@ -136,13 +117,11 @@ class CollectionFilter(object):
         logger.info("SOLR query: %s", q)
         return self.context.portal_catalog.searchResults(q)
 
-    @memoize
     def OR_exclude(self):
         allow_none = self.context.allow_empty_values_for or []
         return list(itertools.chain(
             self.ignored_keys, self.force_AND, allow_none))
 
-    @memoize
     def get_request_data(self):
         request = self.context.REQUEST
         req_allowed = set([x['i'] for x in self.context.query])
