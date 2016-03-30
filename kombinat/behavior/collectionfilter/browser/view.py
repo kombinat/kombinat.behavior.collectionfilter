@@ -74,7 +74,8 @@ class CollectionFilter(object):
 
     @property
     def parsed_query(self):
-        return queryparser.parseFormquery(self.context, self.context.query)
+        return queryparser.parseFormquery(self.context, self.context.query,
+            sort_on=self.context.sort_on)
 
     def filtered_result(self, **kwargs):
         if 'default_values' in kwargs:
@@ -105,7 +106,7 @@ class CollectionFilter(object):
         sort_key = pquery.pop('sort_on', 'sortable_title')
         sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
-        logger.info("AdvancedQuery: %s", q)
+        logger.info("AdvancedQuery: %s (sorting: %s", q, sort_on)
         return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
 
     def solr_query(self, pquery, fdata):
