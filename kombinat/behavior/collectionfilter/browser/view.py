@@ -84,6 +84,14 @@ class CollectionFilter(object):
             fdata = self.default_values
 
         pquery = kwargs.pop('pquery', self.parsed_query)
+
+        # Subject Index has to be utf8 encoded
+        if 'Subject' in pquery:
+            subjects = pquery['Subject'].get('query', [])
+            if not isinstance(subjects, list):
+                subjects = list(subjects)
+            pquery['Subject'] = dict(query=[safe_utf8(s) for s in subjects])
+
         try:
             return self.filtered_query(pquery, fdata,
                 kwargs.get('batch', False), kwargs.get('b_size', 100),
@@ -112,9 +120,8 @@ class CollectionFilter(object):
     def solr_query(self, pquery, fdata):
         sort_key = pquery.pop('sort_on', 'sortable_title')
         q = self.solr_query_builder(fdata, pquery)
-        q.update({'sort_on': sort_key})
-        q.update(
-            {'sort_order': self.context.sort_reversed and 'desc' or 'asc'})
+        q.update({'sort': '{} {}'.format(
+            sort_key, self.context.sort_reversed and 'desc' or 'asc')})
         logger.info("SOLR query: %s", q)
         return self.context.portal_catalog.searchResults(q)
 
