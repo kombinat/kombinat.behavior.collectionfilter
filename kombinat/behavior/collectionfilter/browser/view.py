@@ -76,7 +76,7 @@ class CollectionFilter(object):
     @property
     def parsed_query(self):
         return queryparser.parseFormquery(self.context, self.context.query,
-            sort_on=self.context.sort_on)
+            sort_on=ICollection(self.context).sort_on)
 
     def filtered_result(self, **kwargs):
         if 'default_values' in kwargs:
