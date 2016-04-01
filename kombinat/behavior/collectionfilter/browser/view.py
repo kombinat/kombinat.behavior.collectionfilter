@@ -66,6 +66,7 @@ class CollectionFilter(object):
     def __init__(self, context):
         self.context = context
 
+    @property
     def default_values(self):
         dflt = self.context.default_filter_values
         if not dflt:
