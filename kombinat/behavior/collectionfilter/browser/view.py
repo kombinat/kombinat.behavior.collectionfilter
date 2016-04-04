@@ -113,7 +113,8 @@ class CollectionFilter(object):
 
     def advanced_query(self, pquery, fdata):
         sort_key = pquery.pop('sort_on', 'sortable_title')
-        sort_on = ((sort_key, self.context.sort_reversed and 'desc' or 'asc'),)
+        sort_on = (
+            (sort_key, self.context.sort_reversed and 'reverse' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
         logger.info("AdvancedQuery: %s (sorting: %s", q, sort_on)
         return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
@@ -121,8 +122,10 @@ class CollectionFilter(object):
     def solr_query(self, pquery, fdata):
         sort_key = pquery.pop('sort_on', 'sortable_title')
         q = self.solr_query_builder(fdata, pquery)
-        q.update({'sort': '{} {}'.format(
-            sort_key, self.context.sort_reversed and 'desc' or 'asc')})
+        q.update({
+            'sort_on': sort_key,
+            'sort_order': self.context.sort_reversed and 'reverse' or 'asc',
+        })
         logger.info("SOLR query: %s", q)
         return self.context.portal_catalog.searchResults(q)
 
