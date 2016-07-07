@@ -53,6 +53,12 @@ class CollectionFilterAdvancedQuery(object):
             self.query |= val
         return self
 
+    def exclude(self, val):
+        if self.query is None:
+            self.query = ~ val
+        else:
+            self.query = self.query & ~ val
+
 
 @adapter(ICollection)
 @implementer(ICollectionFilter)
@@ -72,6 +78,16 @@ class CollectionFilter(object):
         if not dflt:
             return {}
         return dict([map(safe_unicode, l.split(":")) for l in dflt])
+
+    @property
+    def exclude_values(self):
+        excl = self.context.exclude_filter_values or []
+        excl_dict = {}
+        for l in excl:
+            k, v = l.split(":")
+            v = self.safe_subject_encode(k, v)
+            excl_dict[k] = "," in v and v.split(",") or v
+        return excl_dict
 
     @property
     def parsed_query(self):
@@ -190,6 +206,10 @@ class CollectionFilter(object):
         # respect INavigationRoot or ILanguageRootFolder or ISubsite
         _q &= Generic('path', fdata.get('path') or pquery.get('path') or \
             getNavigationRoot(self.context))
+
+        # add exclude values
+        for name, value in self.exclude_values.items():
+            _q.exclude(Generic(name, value))
 
         return _q.query
 

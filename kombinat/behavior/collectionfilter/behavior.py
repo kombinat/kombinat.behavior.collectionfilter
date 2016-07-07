@@ -18,9 +18,17 @@ class ICollectionFilter(form.Schema):
         default=False,
     )
 
+    exclude_filter_values = schema.List(
+        title=_(u"Exclude Filter Values"),
+        description=_("Set default values with key:value[,value] per line"),
+        default=[],
+        required=False,
+        value_type=schema.TextLine(),
+    )
+
     default_filter_values = schema.List(
         title=_(u"Default Filter Values"),
-        description=_("Set default values with key:value in each line"),
+        description=_("Set default values with key:value[,value] per line"),
         default=[],
         required=False,
         value_type=schema.TextLine(),
