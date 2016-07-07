@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2015-09-07 06:29+0000\n"
-"PO-Revision-Date: 2015-10-09 08:38+0200\n"
+"POT-Creation-Date: 2016-07-07 12:02+0000\n"
+"PO-Revision-Date: 2016-07-07 14:07+0200\n"
 "Last-Translator: Peter Mathis <peter.mathis@kombinat.at>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -14,45 +14,69 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 "Language: de\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.8\n"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:18
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:20
 msgid "-- all Locations --"
 msgstr "-- Alle Pfade --"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:17
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:19
 msgid "-- all Subjects --"
 msgstr "-- Alle Stichwörter --"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:19
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/viewlet.py:21
 msgid "-- all Types --"
 msgstr "-- Alle Artikeltypen --"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:29
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:38
 msgid "Allow empty values for"
 msgstr "Erlaube leere Werte für folgende Felder"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:21
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/configure.zcml:30
+msgid "Collection Filter"
+msgstr "Kollektion Filter"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/configure.zcml:23
+msgid "Collection Filter Behavior"
+msgstr ""
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:30
 msgid "Default Filter Values"
 msgstr "Standard Filterwerte"
 
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:22
-msgid "Set default values with key:value in each line"
-msgstr ""
-"Standardwerte setzen mit \"Feldname:Wert\"<br />\n"
-"z.B: portal_type:Document"
+msgid "Exclude Filter Values"
+msgstr "Ausschluss Indexwerte"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:38
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/configure.zcml:23
+msgid "Extension profile for kombinat.behavior.collectionfilter"
+msgstr ""
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:47
+msgid "Ignore Fields"
+msgstr "Ignorierte Katalogindexe"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:23
+msgid "Set default values with key:value[,value] per line"
+msgstr ""
+"Ein \"Indexname:Indexwert\" pro Zeile. z.B: <br/>\n"
+"Subject:subject1[,subject2]"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:56
 msgid "Show 'Startdate' selector"
 msgstr "Zeige \"Startdatum\"-Feld"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:14
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:15
 msgid "Show Filter"
 msgstr "Zeige Filter"
 
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:15
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:16
 msgid "Show criteria filter in view and/or tile view of collective.cover"
 msgstr "Aktiviert Filter für Kollektionsansicht oder Tiles"
+
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/configure.zcml:30
+msgid "Toggle collection filter visibility"
+msgstr "Kollektionsfilter sichtbar?"
 
 #: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/browser/collection_filter.pt:25
 msgid "When"
@@ -63,6 +87,11 @@ msgid "You did not specify any filterable criterias for this collection.<br /> R
 msgstr "Sie haben keine filterbaren Kriterien in dieser Kollektion angegeben."
 
 #. Default: "Fieldnames provided here can be empty"
-#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:30
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:39
 msgid "help_allow_empty_values"
 msgstr "Hier angegebene Felder können auch \"leer\" sein, d.h. Sie werden im Query nicht berücksichtig. Andernfalls muss zwingend eines der angegebenen Werte im Suchquery vorkommen."
+
+#. Default: "Which fields should be ignored in the filter"
+#: kombinat.behavior.collectionfilter/kombinat/behavior/collectionfilter/behavior.py:48
+msgid "help_ignore_fields"
+msgstr "Geben sie die Katalogindexe an, welche im Filter ignoriert werden sollen"
