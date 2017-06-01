@@ -27,8 +27,7 @@ setup(name='kombinat.behavior.collectionfilter',
           'setuptools',
           # -*- Extra requirements: -*-
           'Products.AdvancedQuery',
-          'plone.app.contenttypes',
-          'plone.app.widgets',
+          'plone.app.dexterity',
       ],
       entry_points="""
       # -*- Entry points: -*-
