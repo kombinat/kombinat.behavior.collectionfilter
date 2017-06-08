@@ -13,8 +13,9 @@ class ICollectionFilter(form.Schema):
 
     show_filter = schema.Bool(
         title=_(u"Show Filter"),
-        description=_("Show criteria filter in view and/or tile view " \
-            "of collective.cover"),
+        description=_(
+            "Show criteria filter in view and/or tile view of "
+            "collective.cover"),
         default=False,
     )
 
@@ -36,7 +37,8 @@ class ICollectionFilter(form.Schema):
 
     allow_empty_values_for = schema.List(
         title=_(u"Allow empty values for"),
-        description=_("help_allow_empty_values",
+        description=_(
+            "help_allow_empty_values",
             default=u"Fieldnames provided here can be empty"),
         required=False,
         default=[],
@@ -45,7 +47,8 @@ class ICollectionFilter(form.Schema):
 
     ignore_fields = schema.List(
         title=_(u"Ignore Fields"),
-        description=_("help_ignore_fields",
+        description=_(
+            "help_ignore_fields",
             default=u"Which fields should be ignored in the filter"),
         required=False,
         default=[],
@@ -58,5 +61,6 @@ class ICollectionFilter(form.Schema):
         default=False,
     )
 
-    model.fieldset('settings', fields=['show_filter', 'default_filter_values',
-        'allow_empty_values_for', 'show_start', 'ignore_fields'])
+    model.fieldset('settings', fields=[
+        'show_filter', 'default_filter_values', 'allow_empty_values_for',
+        'show_start', 'ignore_fields'])

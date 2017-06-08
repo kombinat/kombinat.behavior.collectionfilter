@@ -26,7 +26,9 @@ try:
     pkg_resources.get_distribution('collective.solr')
 except pkg_resources.DistributionNotFound:
     HAS_SOLR = False
-    solrIsActive = lambda: False
+
+    def solrIsActive():
+        return False
 else:
     from collective.solr.utils import isActive as solrIsActive
     HAS_SOLR = True
@@ -64,7 +66,8 @@ class CollectionFilterAdvancedQuery(object):
 @implementer(ICollectionFilter)
 class CollectionFilter(object):
 
-    ignored_keys = (u'b_start', u'b_size', u'ajax_load', u'_authenticator',
+    ignored_keys = (
+        u'b_start', u'b_size', u'ajax_load', u'_authenticator',
         u'_filter_start', u'start', u'mode')
     force_AND = (u'path', u'portal_type')
     start_filter = '_filter_start'
@@ -91,7 +94,8 @@ class CollectionFilter(object):
 
     @property
     def parsed_query(self):
-        return queryparser.parseFormquery(self.context, self.context.query,
+        return queryparser.parseFormquery(
+            self.context, self.context.query,
             sort_on=getattr(self.context, 'sort_on', None))
 
     def filtered_result(self, **kwargs):
@@ -110,12 +114,13 @@ class CollectionFilter(object):
             pquery['Subject'] = dict(query=[safe_utf8(s) for s in subjects])
 
         try:
-            return self.filtered_query(pquery, fdata,
-                kwargs.get('batch', False), kwargs.get('b_size', 100),
-                kwargs.get('b_start', 0))
+            return self.filtered_query(
+                pquery, fdata, kwargs.get('batch', False),
+                kwargs.get('b_size', 100), kwargs.get('b_start', 0))
         except Exception, msg:
-            logger.info("Could not apply filtered search: %s, %s %s",
-                msg, fdata, pquery)
+            logger.info(
+                "Could not apply filtered search: %s, %s %s", msg, fdata,
+                pquery)
 
     def filtered_query(self, pquery, fdata, batch, b_size, b_start):
         if HAS_SOLR and solrIsActive():
@@ -132,7 +137,7 @@ class CollectionFilter(object):
         sort_on = (
             (sort_key, self.context.sort_reversed and 'reverse' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
-        logger.info("AdvancedQuery: %s (sorting: %s", q, sort_on)
+        logger.info("AdvancedQuery: %s (sorting: %s)", q, sort_on)
         return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
 
     def solr_query(self, pquery, fdata):
@@ -155,8 +160,8 @@ class CollectionFilter(object):
         req_allowed = set([x['i'] for x in self.context.query])
         # add special keys here
         req_allowed.add(self.start_filter)
-        return dict([(k, v) for k, v in request.items() if k in req_allowed \
-            and v])
+        return dict(
+            [(k, v) for k, v in request.items() if k in req_allowed and v])
 
     def safe_subject_encode(self, k, v):
         return k == 'Subject' and safe_utf8(v) or safe_unicode(v)
@@ -180,15 +185,15 @@ class CollectionFilter(object):
         fdata.update(self.get_request_data())
 
         # OR concatenation of default fields
-        for idx in ([Generic(k, v['query']) for k, v in pquery.items() \
-        if k not in self.OR_exclude()]):
+        for idx in ([Generic(k, v['query']) for k, v in pquery.items()
+                     if k not in self.OR_exclude()]):
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
             _q |= idx
 
         # AND concatenation of request values
-        for idx in ([Generic(k, self.safe_subject_encode(k, v)) for k, v \
-        in fdata.items() if v and k not in self.ignored_keys]):
+        for idx in ([Generic(k, self.safe_subject_encode(k, v)) for k, v
+                     in fdata.items() if v and k not in self.ignored_keys]):
             _q &= idx
 
         # special case for event listing filter
@@ -200,11 +205,14 @@ class CollectionFilter(object):
             _q &= Generic('start', pquery['start'])
 
         if fdata.get('portal_type') or pquery.get('portal_type'):
-            _q &= Generic('portal_type', fdata.get('portal_type') or \
-                pquery.get('portal_type'))
+            _q &= Generic(
+                'portal_type',
+                fdata.get('portal_type') or pquery.get('portal_type'))
 
         # respect INavigationRoot or ILanguageRootFolder or ISubsite
-        _q &= Generic('path', fdata.get('path') or pquery.get('path') or \
+        _q &= Generic(
+            'path',
+            fdata.get('path') or pquery.get('path') or
             getNavigationRoot(self.context))
 
         # add exclude values
@@ -216,10 +224,12 @@ class CollectionFilter(object):
     def solr_query_builder(self, fdata, pquery):
         """ build query for solr search """
         fdata.update(self.get_request_data())
-        query = dict([(k, self.safe_subject_encode(k, v)) for k, v \
+        query = dict([
+            (k, self.safe_subject_encode(k, v)) for k, v
             in fdata.items() if k not in self.ignored_keys])
         or_exclude = set(self.OR_exclude()).union(query.keys())
-        or_q = dict([(k, v.get('query', v)) for k, v in pquery.items() \
+        or_q = dict([(
+            k, v.get('query', v)) for k, v in pquery.items()
             if k not in or_exclude])
         query.update(or_q)
 
