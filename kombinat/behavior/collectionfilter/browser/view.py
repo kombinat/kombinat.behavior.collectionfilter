@@ -118,7 +118,7 @@ class CollectionFilter(object):
                 pquery, fdata, kwargs.get('batch', False),
                 kwargs.get('b_size', 100), kwargs.get('b_start', 0))
         except Exception, msg:
-            logger.info(
+            logger.warning(
                 "Could not apply filtered search: %s, %s %s", msg, fdata,
                 pquery)
 
@@ -137,7 +137,7 @@ class CollectionFilter(object):
         sort_on = (
             (sort_key, self.context.sort_reversed and 'reverse' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
-        logger.info("AdvancedQuery: %s (sorting: %s)", q, sort_on)
+        logger.debug("AdvancedQuery: %s (sorting: %s)", q, sort_on)
         return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
 
     def solr_query(self, pquery, fdata):
@@ -147,7 +147,7 @@ class CollectionFilter(object):
             'sort_on': sort_key,
             'sort_order': self.context.sort_reversed and 'reverse' or 'asc',
         })
-        logger.info("SOLR query: %s", q)
+        logger.debug("SOLR query: %s", q)
         return self.context.portal_catalog.searchResults(q)
 
     def OR_exclude(self):
