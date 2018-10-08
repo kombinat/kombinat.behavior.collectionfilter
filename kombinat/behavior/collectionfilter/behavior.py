@@ -1,5 +1,4 @@
 from plone.autoform.interfaces import IFormFieldProvider
-from plone.directives import form
 from plone.supermodel import model
 from zope import schema
 from zope.i18nmessageid.message import MessageFactory
@@ -9,7 +8,7 @@ _ = MessageFactory("kombinat.behavior.collectionfilter")
 
 
 @provider(IFormFieldProvider)
-class ICollectionFilter(form.Schema):
+class ICollectionFilter(model.Schema):
 
     show_filter = schema.Bool(
         title=_(u"Show Filter"),
