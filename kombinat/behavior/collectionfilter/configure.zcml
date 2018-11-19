@@ -19,6 +19,14 @@
       provides="Products.GenericSetup.interfaces.EXTENSION"
       />
 
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="Collection Filter Behavior - uninstall"
+      directory="profiles/uninstall"
+      description="Uninstall profile."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
   <!-- collection filter behavior -->
   <plone:behavior
       title="Collection Filter"

@@ -5,3 +5,4 @@ Changelog
 -------------------
 
 - Added exclude value field
+- Added uninstall profile

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Register the package-specific browser layer,
+     so that it will be activated
+     when this product is installed. -->
+<layers>
+    <layer name="kombinat.behavior.collectionfilter.layer"
+      interface="kombinat.behavior.collectionfilter.interfaces.ICollectionFilterLayer" remove="true" />
+    <layer name="kombinat.behavior.collectionfilter.eventlayer"
+      interface="kombinat.behavior.collectionfilter.interfaces.ICollectionFilterEventLayer" remove="true" />
+    <layer name="kombinat.behavior.collectionfilter.paclayer"
+      interface="kombinat.behavior.collectionfilter.interfaces.ICollectionFilterPACLayer" remove="true" />
+</layers>

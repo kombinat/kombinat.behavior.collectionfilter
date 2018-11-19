@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<registry xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+
+    <!-- criteria mapping dict ... override this in your theme package -->
+    <record name="kombinat.behavior.collectionfilter.translation_map" remove="true" />
+
+    <!-- criteria vocabulary dict -->
+    <record name="kombinat.behavior.collectionfilter.vocabulary_map" remove="true" />
+
+</registry>
