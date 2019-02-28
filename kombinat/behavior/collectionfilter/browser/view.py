@@ -117,9 +117,9 @@ class CollectionFilter(object):
             return self.filtered_query(
                 pquery, fdata, kwargs.get('batch', False),
                 kwargs.get('b_size', 100), kwargs.get('b_start', 0))
-        except Exception, msg:
+        except Exception as e:
             logger.warning(
-                "Could not apply filtered search: %s, %s %s", msg, fdata,
+                "Could not apply filtered search: %s, %s %s", e.args, fdata,
                 pquery)
 
     def filtered_query(self, pquery, fdata, batch, b_size, b_start):
@@ -137,7 +137,7 @@ class CollectionFilter(object):
         sort_on = (
             (sort_key, self.context.sort_reversed and 'reverse' or 'asc'),)
         q = self.advanced_query_builder(fdata, pquery=pquery)
-        logger.debug("AdvancedQuery: %s (sorting: %s)", q, sort_on)
+        logger.info("AdvancedQuery: %s (sorting: %s)", q, sort_on)
         return self.context.portal_catalog.evalAdvancedQuery(q, sort_on)
 
     def solr_query(self, pquery, fdata):
@@ -179,21 +179,19 @@ class CollectionFilter(object):
         (kwx & kwx & ...) & portal_type
 
         2. Empty filter or search for portal_type only (!):
-        (kw1 | kw2 | kwx | ...) & portal_type
+        (kw1 & kw2 & kwx & ...) & portal_type
         """
         _q = CollectionFilterAdvancedQuery()
         fdata.update(self.get_request_data())
 
-        # OR concatenation of default fields
-        for idx in ([Generic(k, v['query']) for k, v in pquery.items()
-                     if k not in self.OR_exclude()]):
+        # AND concatenation of default (and unfiltered) fields
+        for idx in [Generic(k, v['query']) for k, v in pquery.items() if k not in self.ignored_keys and k not in fdata]:  # noqa
             if idx._idx == 'Subject':
                 idx._term = map(safe_utf8, idx._term)
-            _q |= idx
+            _q &= idx
 
         # AND concatenation of request values
-        for idx in ([Generic(k, self.safe_subject_encode(k, v)) for k, v
-                     in fdata.items() if v and k not in self.ignored_keys]):
+        for idx in ([Generic(k, self.safe_subject_encode(k, v)) for k, v in fdata.items() if bool(v) and k not in self.ignored_keys]):  # noqa
             _q &= idx
 
         # special case for event listing filter
