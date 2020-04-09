@@ -62,4 +62,4 @@ class ICollectionFilter(model.Schema):
 
     model.fieldset('settings', fields=[
         'show_filter', 'default_filter_values', 'allow_empty_values_for',
-        'show_start', 'ignore_fields'])
+        'exclude_filter_values', 'show_start', 'ignore_fields'])
