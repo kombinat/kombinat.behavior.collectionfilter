@@ -9,9 +9,8 @@
     <div tal:repeat="fld ffields"
          tal:attributes="class string:col-sm-${col_width}">
       <select size="1" name="Type"
-              tal:attributes="name fld/name;
-                              data-placeholder fld/placeholder">
-        <option value=""></option>
+              tal:attributes="name fld/name">
+        <option value="" tal:content="fld/placeholder"></option>
         <tal:block repeat="i fld/options">
         <option tal:attributes="value i/value;
                                 selected i/selected"
